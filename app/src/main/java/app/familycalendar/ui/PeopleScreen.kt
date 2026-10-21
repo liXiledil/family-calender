@@ -123,23 +123,7 @@ private fun PersonForm(
             singleLine = true,
             modifier = Modifier.fillMaxWidth(),
         )
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            PersonColors.forEach { c ->
-                Box(
-                    Modifier
-                        .size(32.dp)
-                        .border(
-                            BorderStroke(3.dp, if (c == color) MaterialTheme.colorScheme.onSurface else Color.Transparent),
-                            CircleShape,
-                        )
-                        .padding(4.dp)
-                        .clickable { color = c },
-                    contentAlignment = Alignment.Center,
-                ) {
-                    ColorDot(c, 24.dp)
-                }
-            }
-        }
+        ColorSwatchPicker(selected = color, palette = PersonColors, onSelect = { color = it })
         Button(onClick = { onSubmit(name.trim(), color) }, enabled = name.isNotBlank()) { Text(actionLabel) }
     }
 }

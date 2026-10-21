@@ -14,6 +14,7 @@ import app.familycalendar.data.FeedSourceStore
 import app.familycalendar.data.Importer
 import app.familycalendar.data.SharingPrefs
 import app.familycalendar.data.SyncManager
+import app.familycalendar.data.ThemeStore
 import app.familycalendar.ui.FamilyCalendarApp
 import app.familycalendar.ui.FamilyCalendarTheme
 import java.io.File
@@ -24,6 +25,7 @@ class MainActivity : ComponentActivity() {
     private val importer by lazy { Importer(applicationContext, feedSources) }
     private val apiKeys by lazy { ApiKeyStore(applicationContext) }
     private val claude by lazy { ClaudeClient(apiKeys) }
+    private val themeStore by lazy { ThemeStore(applicationContext) }
     private val sharedUris = mutableStateListOf<Uri>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -33,8 +35,8 @@ class MainActivity : ComponentActivity() {
         val sharing = SharingPrefs(applicationContext)
         if (sharing.shareLocation || sharing.receiveAlerts) runCatching { LocationShareService.start(applicationContext) }
         setContent {
-            FamilyCalendarTheme {
-                FamilyCalendarApp(sync, feedSources, importer, apiKeys, claude, sharedUris)
+            FamilyCalendarTheme(themeStore.current) {
+                FamilyCalendarApp(sync, feedSources, importer, apiKeys, claude, sharedUris, themeStore)
             }
         }
     }
