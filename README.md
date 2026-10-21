@@ -11,6 +11,12 @@ A Skylight-style family calendar for Android. Everyone in the family gets a colo
 - **Family sync (Sync tab):** sign in, create a family, share the invite code, and everyone's phone shows the same calendar.
 - **Family locations (Family tab):** each person picks who their phone belongs to and opts in to sharing. Save places (Home, School) while standing there; arrivals and departures show up in the Recent list and as notifications on phones that opted in to alerts. Alerts depend on the phone's sharing notification staying on (set Firefly's battery use to Unrestricted); there is no always-on server push, which would need Firebase's paid Blaze plan.
 
+## Look and feel
+
+The **Look** tab changes the whole app on that phone: light, dark or match the phone, four soft palettes (Hearth, Seaside, Blossom, Meadow), your own main color, four font pairings and four text sizes. Each family member's color is picked from 16 swatches or mixed with a hue slider on the People tab.
+
+Fonts bundled in `app/src/main/res/font` are Nunito, Fredoka, Lora and Atkinson Hyperlegible, all under the SIL Open Font License.
+
 ## Install on your phone
 
 1. On your Android phone, open https://github.com/liXiledil/family-calender/releases/latest/download/family-calendar.apk in Chrome.

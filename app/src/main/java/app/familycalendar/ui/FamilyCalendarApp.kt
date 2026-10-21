@@ -33,6 +33,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import app.familycalendar.data.ApiKeyStore
 import app.familycalendar.data.ClaudeClient
+import app.familycalendar.data.ThemeStore
 import app.familycalendar.data.FamilyLocations
 import app.familycalendar.data.FirebaseBootstrap
 import androidx.compose.runtime.DisposableEffect
@@ -52,11 +53,11 @@ import app.familycalendar.data.findConflicts
 import java.time.LocalDate
 
 private enum class Screen(val label: String) {
-    Day("Day"), Week("Week"), Month("Month"), Year("Year"), Live("Map"), Import("Import"), Claude("Claude"), Family("Family"), People("People"), Sync("Sync")
+    Day("Day"), Week("Week"), Month("Month"), Year("Year"), Live("Map"), Import("Import"), Claude("Claude"), Family("Family"), Look("Look"), People("People"), Sync("Sync")
 }
 
 /** Tabs that are not calendar views: no person filter, no add button. */
-private val toolScreens = setOf(Screen.Live, Screen.Import, Screen.Claude, Screen.Family, Screen.People, Screen.Sync)
+private val toolScreens = setOf(Screen.Live, Screen.Import, Screen.Claude, Screen.Family, Screen.Look, Screen.People, Screen.Sync)
 
 /** Which event the editor is open for; [event] is null when adding a new one. */
 private data class EditorRequest(val event: Event?, val date: LocalDate)
@@ -70,6 +71,7 @@ fun FamilyCalendarApp(
     apiKeys: ApiKeyStore,
     claude: ClaudeClient,
     sharedUris: SnapshotStateList<Uri>,
+    themeStore: ThemeStore,
 ) {
     val store by sync.repository.collectAsState()
     val syncState by sync.state.collectAsState()
@@ -121,6 +123,10 @@ fun FamilyCalendarApp(
         Column(Modifier.padding(padding).fillMaxSize()) {
             if (screen == Screen.Sync) {
                 SyncScreen(sync)
+                return@Column
+            }
+            if (screen == Screen.Look) {
+                ThemeScreen(themeStore)
                 return@Column
             }
             if (screen == Screen.Family) {
