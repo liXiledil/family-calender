@@ -18,7 +18,18 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Tab
 import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
+import app.familycalendar.R
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -104,7 +115,21 @@ fun FamilyCalendarApp(
     Scaffold(
         topBar = {
             Column {
-                TopAppBar(title = { Text("Firefly") })
+                Box(
+                    Modifier.fillMaxWidth().statusBarsPadding().padding(horizontal = 12.dp, vertical = 6.dp),
+                    contentAlignment = Alignment.CenterStart,
+                ) {
+                    Image(
+                        painter = painterResource(R.drawable.firefly_wordmark),
+                        contentDescription = "Firefly",
+                        contentScale = ContentScale.Fit,
+                        modifier = Modifier
+                            .height(52.dp)
+                            .clip(RoundedCornerShape(14.dp))
+                            .background(Color(0xFFFFFBF0))
+                            .padding(horizontal = 10.dp),
+                    )
+                }
                 ScrollableTabRow(selectedTabIndex = screenIndex, edgePadding = 8.dp) {
                     Screen.entries.forEach { s ->
                         Tab(selected = s == screen, onClick = { screenIndex = s.ordinal }, text = { Text(s.label) })
