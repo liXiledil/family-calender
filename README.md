@@ -6,9 +6,10 @@ This is the first milestone from the product spec: family members, manual events
 
 ## Install on your phone
 
-1. Open the latest successful run under **Actions > Android build**.
-2. Download the `family-calendar-apk` artifact and unzip it.
-3. Open `app-debug.apk` on your Android phone and allow installing from this source when asked.
+1. On your Android phone, open https://github.com/liXiledil/family-calender/releases/latest/download/family-calendar.apk in Chrome.
+2. Open the downloaded `family-calendar.apk` and allow installing from Chrome when asked.
+
+Every push to `main` rebuilds the APK and replaces the **latest** release, so the same link always gets the newest version.
 
 ## Build locally
 

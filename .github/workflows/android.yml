@@ -6,6 +6,9 @@ on:
   pull_request:
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -22,8 +25,23 @@ jobs:
       - name: Run unit tests and build APK
         run: ./gradlew testDebugUnitTest assembleDebug
 
+      - name: Rename APK
+        run: cp app/build/outputs/apk/debug/app-debug.apk family-calendar.apk
+
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: family-calendar-apk
-          path: app/build/outputs/apk/debug/app-debug.apk
+          path: family-calendar.apk
+
+      # Each build on main replaces the "latest" release, so the phone download link never changes.
+      - name: Publish latest release
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete latest --yes --cleanup-tag || true
+          gh release create latest family-calendar.apk \
+            --title "Family Calendar (latest build)" \
+            --notes "Built from ${GITHUB_SHA::7}. Open family-calendar.apk on your Android phone to install or update." \
+            --latest
