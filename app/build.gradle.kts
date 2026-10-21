@@ -60,6 +60,13 @@ android {
         compose = true
         buildConfig = true
     }
+
+    // The Anthropic SDK pulls in Apache HTTP jars that each ship the same metadata files.
+    packaging {
+        resources {
+            excludes += setOf("META-INF/DEPENDENCIES", "META-INF/LICENSE*", "META-INF/NOTICE*", "META-INF/INDEX.LIST", "META-INF/io.netty.versions.properties")
+        }
+    }
 }
 
 dependencies {
