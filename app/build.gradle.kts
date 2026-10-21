@@ -1,8 +1,19 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("org.jetbrains.kotlin.plugin.compose")
 }
+
+// Firebase project identifiers for cloud sync. These are public identifiers, not secrets;
+// access is controlled by firestore.rules. Without the file the app runs on this phone only.
+val firebase = Properties().apply {
+    val file = rootProject.file("firebase.properties")
+    if (file.exists()) file.inputStream().use { load(it) }
+}
+
+fun quoted(key: String) = "\"" + firebase.getProperty(key, "") + "\""
 
 android {
     namespace = "app.familycalendar"
@@ -12,8 +23,22 @@ android {
         applicationId = "app.familycalendar"
         minSdk = 26
         targetSdk = 34
-        versionCode = 1
-        versionName = "0.1.0"
+        versionCode = 2
+        versionName = "0.2.0"
+
+        buildConfigField("String", "FIREBASE_API_KEY", quoted("apiKey"))
+        buildConfigField("String", "FIREBASE_APP_ID", quoted("appId"))
+        buildConfigField("String", "FIREBASE_PROJECT_ID", quoted("projectId"))
+    }
+
+    // A fixed debug key so every build from CI can install over the previous one.
+    signingConfigs {
+        getByName("debug") {
+            storeFile = file("debug.keystore")
+            storePassword = "android"
+            keyAlias = "androiddebugkey"
+            keyPassword = "android"
+        }
     }
 
     buildTypes {
@@ -33,6 +58,7 @@ android {
 
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
@@ -42,6 +68,10 @@ dependencies {
     implementation("androidx.core:core-ktx:1.13.1")
     implementation("androidx.activity:activity-compose:1.9.2")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.8.1")
+    implementation(platform("com.google.firebase:firebase-bom:33.4.0"))
+    implementation("com.google.firebase:firebase-auth")
+    implementation("com.google.firebase:firebase-firestore")
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.foundation:foundation")
     implementation("androidx.compose.material3:material3")

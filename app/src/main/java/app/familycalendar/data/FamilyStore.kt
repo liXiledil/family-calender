@@ -10,26 +10,26 @@ import java.time.LocalDate
 import java.time.LocalTime
 
 /** Keeps the family's people and events in a JSON file on the device. */
-class FamilyStore(private val file: File) {
+class FamilyStore(private val file: File) : FamilyRepository {
     private val _data = MutableStateFlow(load())
-    val data: StateFlow<FamilyData> = _data.asStateFlow()
+    override val data: StateFlow<FamilyData> = _data.asStateFlow()
 
-    fun upsertPerson(person: Person) = update { d ->
+    override fun upsertPerson(person: Person) = update { d ->
         d.copy(people = d.people.upsert(person) { it.id == person.id })
     }
 
-    fun removePerson(personId: String) = update { d ->
+    override fun removePerson(personId: String) = update { d ->
         d.copy(
             people = d.people.filter { it.id != personId },
             events = d.events.map { e -> e.copy(personIds = e.personIds - personId) },
         )
     }
 
-    fun upsertEvent(event: Event) = update { d ->
+    override fun upsertEvent(event: Event) = update { d ->
         d.copy(events = d.events.upsert(event) { it.id == event.id })
     }
 
-    fun removeEvent(eventId: String) = update { d ->
+    override fun removeEvent(eventId: String) = update { d ->
         d.copy(events = d.events.filter { it.id != eventId })
     }
 
