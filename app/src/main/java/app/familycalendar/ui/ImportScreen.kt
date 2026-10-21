@@ -3,6 +3,7 @@ package app.familycalendar.ui
 import android.Manifest
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -170,7 +171,7 @@ private fun AddPhoneCalendars(people: List<Person>, importer: Importer, onAdd: (
 @Composable
 internal fun PersonChips(people: List<Person>, selected: String, onSelect: (String) -> Unit) {
     Text("Whose calendar is this?", style = MaterialTheme.typography.labelMedium)
-    Row(Modifier.fillMaxWidth().horizontalScroll(androidx.compose.foundation.rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+    Row(Modifier.fillMaxWidth().then(Modifier.horizontalScroll(androidx.compose.foundation.rememberScrollState())), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         people.forEach { p ->
             FilterChip(selected = p.id == selected, onClick = { onSelect(p.id) }, label = { Text(p.name) }, leadingIcon = { ColorDot(p.color) })
         }
