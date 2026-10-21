@@ -16,7 +16,7 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRow
+import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -28,6 +28,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.collectAsState
+import android.net.Uri
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.snapshots.SnapshotStateList
+import app.familycalendar.data.ApiKeyStore
+import app.familycalendar.data.ClaudeClient
+import app.familycalendar.data.FeedSourceStore
+import app.familycalendar.data.Importer
+import app.familycalendar.data.expandYearly
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import app.familycalendar.data.Event
@@ -37,20 +45,36 @@ import app.familycalendar.data.conflictingEventIds
 import app.familycalendar.data.findConflicts
 import java.time.LocalDate
 
-private enum class Screen(val label: String) { Day("Day"), Week("Week"), Month("Month"), People("People"), Sync("Sync") }
+private enum class Screen(val label: String) {
+    Day("Day"), Week("Week"), Month("Month"), Year("Year"), Import("Import"), Claude("Claude"), Family("Family"), People("People"), Sync("Sync")
+}
+
+/** Tabs that are not calendar views: no person filter, no add button. */
+private val toolScreens = setOf(Screen.Import, Screen.Claude, Screen.Family, Screen.People, Screen.Sync)
 
 /** Which event the editor is open for; [event] is null when adding a new one. */
 private data class EditorRequest(val event: Event?, val date: LocalDate)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun FamilyCalendarApp(sync: SyncManager) {
+fun FamilyCalendarApp(
+    sync: SyncManager,
+    feedSources: FeedSourceStore,
+    importer: Importer,
+    apiKeys: ApiKeyStore,
+    claude: ClaudeClient,
+    sharedUris: SnapshotStateList<Uri>,
+) {
     val store by sync.repository.collectAsState()
+    val syncState by sync.state.collectAsState()
     val data by store.data.collectAsState()
     var screenIndex by rememberSaveable { mutableIntStateOf(Screen.Day.ordinal) }
     var selectedEpochDay by rememberSaveable { mutableLongStateOf(LocalDate.now().toEpochDay()) }
     var hidden by remember { mutableStateOf(setOf<String>()) }
     var editor by remember { mutableStateOf<EditorRequest?>(null) }
+
+    // A photo or PDF shared into Firefly opens the Claude tab.
+    LaunchedEffect(sharedUris.size) { if (sharedUris.isNotEmpty()) screenIndex = Screen.Claude.ordinal }
 
     val screen = Screen.entries[screenIndex]
     val selectedDate = LocalDate.ofEpochDay(selectedEpochDay)
@@ -65,8 +89,8 @@ fun FamilyCalendarApp(sync: SyncManager) {
     Scaffold(
         topBar = {
             Column {
-                TopAppBar(title = { Text("Family Calendar") })
-                TabRow(selectedTabIndex = screenIndex) {
+                TopAppBar(title = { Text("Firefly") })
+                ScrollableTabRow(selectedTabIndex = screenIndex, edgePadding = 8.dp) {
                     Screen.entries.forEach { s ->
                         Tab(selected = s == screen, onClick = { screenIndex = s.ordinal }, text = { Text(s.label) })
                     }
@@ -74,7 +98,7 @@ fun FamilyCalendarApp(sync: SyncManager) {
             }
         },
         floatingActionButton = {
-            if (screen != Screen.People && screen != Screen.Sync && data.people.isNotEmpty()) {
+            if (screen !in toolScreens && data.people.isNotEmpty()) {
                 FloatingActionButton(onClick = { editor = EditorRequest(null, selectedDate) }) {
                     Text("+", style = MaterialTheme.typography.headlineSmall)
                 }
@@ -84,6 +108,10 @@ fun FamilyCalendarApp(sync: SyncManager) {
         Column(Modifier.padding(padding).fillMaxSize()) {
             if (screen == Screen.Sync) {
                 SyncScreen(sync)
+                return@Column
+            }
+            if (screen == Screen.Family) {
+                FamilyScreen(data.people, syncState)
                 return@Column
             }
             if (screen == Screen.People) {
@@ -96,6 +124,14 @@ fun FamilyCalendarApp(sync: SyncManager) {
             }
             if (data.people.isEmpty()) {
                 NoPeoplePrompt(onAddPeople = { screenIndex = Screen.People.ordinal })
+                return@Column
+            }
+            if (screen == Screen.Import) {
+                ImportScreen(data.people, store, feedSources, importer)
+                return@Column
+            }
+            if (screen == Screen.Claude) {
+                ClaudeScreen(data.people, data.events, store, claude, apiKeys, sharedUris)
                 return@Column
             }
             PersonFilterRow(data.people, hidden) { id -> hidden = if (id in hidden) hidden - id else hidden + id }
@@ -127,7 +163,14 @@ fun FamilyCalendarApp(sync: SyncManager) {
                     onDateChange = selectDate,
                     onDayClick = { selectDate(it); screenIndex = Screen.Day.ordinal },
                 )
-                Screen.People, Screen.Sync -> Unit
+                Screen.Year -> YearView(
+                    date = selectedDate,
+                    people = data.people,
+                    events = remember(visibleEvents, selectedDate.year) { expandYearly(visibleEvents, selectedDate.year..selectedDate.year) },
+                    onDateChange = selectDate,
+                    onDayClick = { selectDate(it); screenIndex = Screen.Day.ordinal },
+                )
+                else -> Unit
             }
         }
     }

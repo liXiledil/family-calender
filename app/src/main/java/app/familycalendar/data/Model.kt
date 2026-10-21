@@ -18,6 +18,12 @@ data class Event(
     val start: LocalTime? = null,
     val end: LocalTime? = null,
     val notes: String = "",
+    /** Shown in the Year view. */
+    val major: Boolean = false,
+    /** Birthdays, anniversaries and other dates that come back every year. */
+    val repeatsYearly: Boolean = false,
+    /** Set on events imported from a linked calendar; a re-import replaces them. */
+    val sourceId: String? = null,
 ) {
     val isAllDay: Boolean get() = start == null
 

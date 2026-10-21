@@ -54,6 +54,8 @@ fun EventEditorDialog(
     var start by remember { mutableStateOf(initial?.start ?: LocalTime.of(9, 0)) }
     var end by remember { mutableStateOf(initial?.effectiveEnd ?: LocalTime.of(10, 0)) }
     var notes by remember { mutableStateOf(initial?.notes ?: "") }
+    var major by remember { mutableStateOf(initial?.major ?: false) }
+    var repeatsYearly by remember { mutableStateOf(initial?.repeatsYearly ?: false) }
 
     val canSave = title.isNotBlank() && selected.isNotEmpty() && (allDay || end > start)
 
@@ -100,6 +102,14 @@ fun EventEditorDialog(
                         Text("End time must be after the start.", color = MaterialTheme.colorScheme.error)
                     }
                 }
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text("Major date (shows in Year view)", Modifier.weight(1f))
+                    Switch(checked = major, onCheckedChange = { major = it })
+                }
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text("Repeats every year", Modifier.weight(1f))
+                    Switch(checked = repeatsYearly, onCheckedChange = { repeatsYearly = it })
+                }
                 Text("Who's involved", style = MaterialTheme.typography.titleSmall)
                 people.forEach { person ->
                     Row(
@@ -136,6 +146,8 @@ fun EventEditorDialog(
                         start = if (allDay) null else start,
                         end = if (allDay) null else end,
                         notes = notes.trim(),
+                        major = major,
+                        repeatsYearly = repeatsYearly,
                     )
                 )
             }) { Text("Save") }

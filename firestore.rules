@@ -51,6 +51,23 @@ service cloud.firestore {
       match /events/{eventId} {
         allow read, write: if isMember(fid) || isMemberAfter(fid);
       }
+
+      // Saved places (Home, School...) are shared by the whole family.
+      match /places/{placeId} {
+        allow read, write: if isMember(fid);
+      }
+
+      // Everyone can see last known locations; you can only write or remove your own.
+      match /locations/{uid} {
+        allow read: if isMember(fid);
+        allow write: if isMember(fid) && request.auth.uid == uid;
+      }
+
+      // Arrival and leave alerts: readable by the family, written only as yourself.
+      match /placeEvents/{eventId} {
+        allow read: if isMember(fid);
+        allow create: if isMember(fid) && request.resource.data.uid == request.auth.uid;
+      }
     }
   }
 }
