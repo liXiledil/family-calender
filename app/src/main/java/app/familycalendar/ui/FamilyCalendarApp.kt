@@ -33,6 +33,12 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import app.familycalendar.data.ApiKeyStore
 import app.familycalendar.data.ClaudeClient
+import app.familycalendar.data.FamilyLocations
+import app.familycalendar.data.FirebaseBootstrap
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.ui.platform.LocalContext
+import app.familycalendar.data.SyncState
+import com.google.firebase.firestore.FirebaseFirestore
 import app.familycalendar.data.FeedSourceStore
 import app.familycalendar.data.Importer
 import app.familycalendar.data.expandYearly
@@ -46,11 +52,11 @@ import app.familycalendar.data.findConflicts
 import java.time.LocalDate
 
 private enum class Screen(val label: String) {
-    Day("Day"), Week("Week"), Month("Month"), Year("Year"), Import("Import"), Claude("Claude"), Family("Family"), People("People"), Sync("Sync")
+    Day("Day"), Week("Week"), Month("Month"), Year("Year"), Live("Map"), Import("Import"), Claude("Claude"), Family("Family"), People("People"), Sync("Sync")
 }
 
 /** Tabs that are not calendar views: no person filter, no add button. */
-private val toolScreens = setOf(Screen.Import, Screen.Claude, Screen.Family, Screen.People, Screen.Sync)
+private val toolScreens = setOf(Screen.Live, Screen.Import, Screen.Claude, Screen.Family, Screen.People, Screen.Sync)
 
 /** Which event the editor is open for; [event] is null when adding a new one. */
 private data class EditorRequest(val event: Event?, val date: LocalDate)
@@ -67,6 +73,13 @@ fun FamilyCalendarApp(
 ) {
     val store by sync.repository.collectAsState()
     val syncState by sync.state.collectAsState()
+    // One live connection to the family's locations, shared by the Map and Family tabs.
+    val appContext = LocalContext.current.applicationContext
+    val familyId = (syncState as? SyncState.InFamily)?.familyId
+    val locations = remember(familyId) {
+        familyId?.let { id -> FirebaseBootstrap.app(appContext)?.let { FamilyLocations(FirebaseFirestore.getInstance(it), id) } }
+    }
+    DisposableEffect(locations) { onDispose { locations?.close() } }
     val data by store.data.collectAsState()
     var screenIndex by rememberSaveable { mutableIntStateOf(Screen.Day.ordinal) }
     var selectedEpochDay by rememberSaveable { mutableLongStateOf(LocalDate.now().toEpochDay()) }
@@ -111,7 +124,11 @@ fun FamilyCalendarApp(
                 return@Column
             }
             if (screen == Screen.Family) {
-                FamilyScreen(data.people, syncState)
+                FamilyScreen(data.people, syncState, locations)
+                return@Column
+            }
+            if (screen == Screen.Live) {
+                MapScreen(data.people, syncState, locations)
                 return@Column
             }
             if (screen == Screen.People) {

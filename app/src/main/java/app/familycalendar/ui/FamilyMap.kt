@@ -38,7 +38,7 @@ import org.osmdroid.views.overlay.Polygon
 /** OpenStreetMap view of where each family member last reported being, with the saved places drawn as circles. */
 @SuppressLint("ClickableViewAccessibility")
 @Composable
-fun FamilyMap(people: List<Person>, locations: List<MemberLocation>, places: List<Place>, modifier: Modifier = Modifier) {
+fun FamilyMap(people: List<Person>, locations: List<MemberLocation>, places: List<Place>, modifier: Modifier = Modifier, fill: Boolean = false) {
     val context = LocalContext.current
     var fitRequest by remember { mutableIntStateOf(0) }
     val mapView = remember {
@@ -72,7 +72,7 @@ fun FamilyMap(people: List<Person>, locations: List<MemberLocation>, places: Lis
 
     Column(modifier) {
         AndroidView(
-            modifier = Modifier.fillMaxWidth().height(320.dp).clip(RoundedCornerShape(16.dp)),
+            modifier = (if (fill) Modifier.fillMaxWidth().weight(1f) else Modifier.fillMaxWidth().height(320.dp)).clip(RoundedCornerShape(16.dp)),
             factory = { mapView },
             update = { map ->
                 map.overlays.clear()
