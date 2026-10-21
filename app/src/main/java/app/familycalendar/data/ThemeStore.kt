@@ -17,6 +17,8 @@ data class ThemePrefs(
     val textScale: Float = 1f,
     /** Text shown in the app's top bar; blank falls back to the app name. */
     val title: String = "Firefly",
+    /** When a header picture was saved (0 means none); shown in place of the text. */
+    val headerImage: Long = 0L,
 )
 
 class ThemeStore(context: Context) {
@@ -38,9 +40,10 @@ class ThemeStore(context: Context) {
         fonts = prefs.getString("fonts", "cozy").orEmpty(),
         textScale = prefs.getFloat("textScale", 1f),
         title = prefs.getString("title", "Firefly").orEmpty(),
+        headerImage = prefs.getLong("headerImage", 0L),
     )
 
     private fun save(p: ThemePrefs) = prefs.edit()
         .putString("palette", p.palette).putLong("accent", p.accent).putString("mode", p.mode.name)
-        .putString("fonts", p.fonts).putFloat("textScale", p.textScale).putString("title", p.title).apply()
+        .putString("fonts", p.fonts).putFloat("textScale", p.textScale).putString("title", p.title).putLong("headerImage", p.headerImage).apply()
 }

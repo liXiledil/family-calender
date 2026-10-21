@@ -1,5 +1,8 @@
 package app.familycalendar.ui
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -26,6 +29,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -52,6 +56,21 @@ fun ThemeScreen(store: ThemeStore) {
             singleLine = true,
             modifier = Modifier.fillMaxWidth(),
         )
+
+        Section("Header picture")
+        val context = LocalContext.current
+        val picker = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
+            if (uri != null && saveHeaderImage(context, uri)) store.update { it.copy(headerImage = System.currentTimeMillis()) }
+        }
+        Text("A picture replaces the header text. Use a wide, transparent PNG for the best result.", style = MaterialTheme.typography.bodySmall)
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            OutlinedButton(onClick = { picker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) }) {
+                Text(if (prefs.headerImage == 0L) "Choose a picture" else "Choose another")
+            }
+            if (prefs.headerImage != 0L) {
+                OutlinedButton(onClick = { deleteHeaderImage(context); store.update { it.copy(headerImage = 0L) } }) { Text("Remove picture") }
+            }
+        }
 
         Section("Light or dark")
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -116,7 +135,7 @@ fun ThemeScreen(store: ThemeStore) {
             }
         }
 
-        OutlinedButton(onClick = { store.reset() }) { Text("Back to the default look") }
+        OutlinedButton(onClick = { deleteHeaderImage(context); store.reset() }) { Text("Back to the default look") }
     }
 }
 

@@ -1,6 +1,8 @@
 package app.familycalendar.ui
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.horizontalScroll
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -104,7 +106,16 @@ fun FamilyCalendarApp(
     Scaffold(
         topBar = {
             Column {
-                TopAppBar(title = { Text(themeStore.current.title.trim().ifEmpty { "Firefly" }) })
+                TopAppBar(title = {
+                    val look = themeStore.current
+                    val name = look.title.trim().ifEmpty { "Firefly" }
+                    val picture = remember(look.headerImage) { if (look.headerImage != 0L) loadHeaderImage(appContext) else null }
+                    if (picture != null) {
+                        Image(picture, contentDescription = name, modifier = Modifier.height(36.dp), contentScale = ContentScale.Fit)
+                    } else {
+                        Text(name)
+                    }
+                })
                 ScrollableTabRow(selectedTabIndex = screenIndex, edgePadding = 8.dp) {
                     Screen.entries.forEach { s ->
                         Tab(selected = s == screen, onClick = { screenIndex = s.ordinal }, text = { Text(s.label) })
