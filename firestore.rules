@@ -1,0 +1,56 @@
+rules_version = '2';
+
+// Family calendar data is readable and writable only by members of that family.
+// Paste this into Firebase console > Firestore Database > Rules and click Publish.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function familyPath(fid) {
+      return /databases/$(database)/documents/families/$(fid);
+    }
+
+    function isMember(fid) {
+      return signedIn() && exists(/databases/$(database)/documents/families/$(fid)/members/$(request.auth.uid));
+    }
+
+    function isMemberAfter(fid) {
+      return signedIn() && existsAfter(/databases/$(database)/documents/families/$(fid)/members/$(request.auth.uid));
+    }
+
+    match /users/{uid} {
+      allow read, write: if signedIn() && request.auth.uid == uid;
+    }
+
+    // Invite codes can be looked up one at a time by signed-in users, never listed.
+    match /invites/{code} {
+      allow get: if signedIn();
+      allow create: if isMemberAfter(request.resource.data.familyId);
+    }
+
+    match /families/{fid} {
+      allow create: if signedIn() && request.resource.data.owner == request.auth.uid;
+      allow read, update: if isMember(fid);
+
+      // You can add yourself as a member if you created the family or know its invite code.
+      match /members/{uid} {
+        allow read: if isMember(fid);
+        allow create: if signedIn() && request.auth.uid == uid && (
+          getAfter(familyPath(fid)).data.owner == uid ||
+          request.resource.data.code == get(familyPath(fid)).data.inviteCode
+        );
+        allow delete: if signedIn() && request.auth.uid == uid;
+      }
+
+      match /people/{personId} {
+        allow read, write: if isMember(fid) || isMemberAfter(fid);
+      }
+
+      match /events/{eventId} {
+        allow read, write: if isMember(fid) || isMemberAfter(fid);
+      }
+    }
+  }
+}

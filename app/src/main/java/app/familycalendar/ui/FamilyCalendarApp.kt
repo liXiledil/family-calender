@@ -31,20 +31,21 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import app.familycalendar.data.Event
-import app.familycalendar.data.FamilyStore
+import app.familycalendar.data.SyncManager
 import app.familycalendar.data.Person
 import app.familycalendar.data.conflictingEventIds
 import app.familycalendar.data.findConflicts
 import java.time.LocalDate
 
-private enum class Screen(val label: String) { Day("Day"), Week("Week"), Month("Month"), People("People") }
+private enum class Screen(val label: String) { Day("Day"), Week("Week"), Month("Month"), People("People"), Sync("Sync") }
 
 /** Which event the editor is open for; [event] is null when adding a new one. */
 private data class EditorRequest(val event: Event?, val date: LocalDate)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun FamilyCalendarApp(store: FamilyStore) {
+fun FamilyCalendarApp(sync: SyncManager) {
+    val store by sync.repository.collectAsState()
     val data by store.data.collectAsState()
     var screenIndex by rememberSaveable { mutableIntStateOf(Screen.Day.ordinal) }
     var selectedEpochDay by rememberSaveable { mutableLongStateOf(LocalDate.now().toEpochDay()) }
@@ -73,7 +74,7 @@ fun FamilyCalendarApp(store: FamilyStore) {
             }
         },
         floatingActionButton = {
-            if (screen != Screen.People && data.people.isNotEmpty()) {
+            if (screen != Screen.People && screen != Screen.Sync && data.people.isNotEmpty()) {
                 FloatingActionButton(onClick = { editor = EditorRequest(null, selectedDate) }) {
                     Text("+", style = MaterialTheme.typography.headlineSmall)
                 }
@@ -81,11 +82,15 @@ fun FamilyCalendarApp(store: FamilyStore) {
         },
     ) { padding ->
         Column(Modifier.padding(padding).fillMaxSize()) {
+            if (screen == Screen.Sync) {
+                SyncScreen(sync)
+                return@Column
+            }
             if (screen == Screen.People) {
                 PeopleScreen(
                     people = data.people,
-                    onSave = store::upsertPerson,
-                    onDelete = store::removePerson,
+                    onSave = { store.upsertPerson(it) },
+                    onDelete = { store.removePerson(it) },
                 )
                 return@Column
             }
@@ -122,7 +127,7 @@ fun FamilyCalendarApp(store: FamilyStore) {
                     onDateChange = selectDate,
                     onDayClick = { selectDate(it); screenIndex = Screen.Day.ordinal },
                 )
-                Screen.People -> Unit
+                Screen.People, Screen.Sync -> Unit
             }
         }
     }
