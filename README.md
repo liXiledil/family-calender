@@ -2,7 +2,14 @@
 
 A Skylight-style family calendar for Android. Everyone in the family gets a color, and the app flags when someone is double-booked.
 
-This is the first milestone from the product spec: family members, manual events, and day, week and month views, stored on the phone. Syncing Outlook/Teams, family sharing and the Claude assistant come next.
+## Features
+
+- **Views:** day, week, month and a yearly view of major dates (birthdays, anniversaries, trips; mark an event "major" or "repeats every year").
+- **Conflicts:** per-person color coding and highlighting of double-bookings.
+- **Import (Import tab):** paste an Outlook "published calendar" ICS link, or read calendars already on the phone (for example the Outlook app's synced calendar). Re-importing replaces that source's events instead of duplicating them. If work policy blocks both, add events by hand or use Claude.
+- **Claude (Claude tab):** scan a photo, screenshot or PDF (or share one into Firefly from any app), audit the calendar for duplicates and cleanup, or ask questions. Claude only proposes; nothing changes until you approve, and changes can be undone. You paste your own Anthropic API key once per phone; it is stored encrypted on that phone only, and a monthly spending cap stops Claude features when reached.
+- **Family sync (Sync tab):** sign in, create a family, share the invite code, and everyone's phone shows the same calendar.
+- **Family locations (Family tab):** each person picks who their phone belongs to and opts in to sharing. Save places (Home, School) while standing there; arrivals and departures show up in the Recent list and as notifications on phones that opted in to alerts. Alerts depend on the phone's sharing notification staying on (set Firefly's battery use to Unrestricted); there is no always-on server push, which would need Firebase's paid Blaze plan.
 
 ## Install on your phone
 

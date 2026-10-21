@@ -33,6 +33,10 @@ class FamilyStore(private val file: File) : FamilyRepository {
         d.copy(events = d.events.filter { it.id != eventId })
     }
 
+    override fun replaceSourceEvents(sourceId: String, events: List<Event>) = update { d ->
+        d.copy(events = d.events.filter { it.sourceId != sourceId } + events)
+    }
+
     private fun update(change: (FamilyData) -> FamilyData) {
         val next = change(_data.value)
         _data.value = next
@@ -61,6 +65,9 @@ class FamilyStore(private val file: File) : FamilyRepository {
                     .put("start", e.start?.toString())
                     .put("end", e.end?.toString())
                     .put("notes", e.notes)
+                    .put("major", e.major)
+                    .put("repeatsYearly", e.repeatsYearly)
+                    .put("sourceId", e.sourceId)
             )
         }
         return JSONObject().put("version", 1).put("people", people).put("events", events).toString()
@@ -86,6 +93,9 @@ class FamilyStore(private val file: File) : FamilyRepository {
                     start = o.optString("start").takeIf { it.isNotEmpty() }?.let(LocalTime::parse),
                     end = o.optString("end").takeIf { it.isNotEmpty() }?.let(LocalTime::parse),
                     notes = o.optString("notes"),
+                    major = o.optBoolean("major"),
+                    repeatsYearly = o.optBoolean("repeatsYearly"),
+                    sourceId = o.optString("sourceId").takeIf { it.isNotEmpty() },
                 )
             },
         )

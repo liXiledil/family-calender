@@ -1,9 +1,6 @@
 package app.familycalendar.data
 
 import android.content.Context
-import app.familycalendar.BuildConfig
-import com.google.firebase.FirebaseApp
-import com.google.firebase.FirebaseOptions
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.CoroutineScope
@@ -21,7 +18,13 @@ sealed interface SyncState {
     data object NotConfigured : SyncState
     data object SignedOut : SyncState
     data class NoFamily(val email: String) : SyncState
-    data class InFamily(val email: String, val familyName: String, val inviteCode: String) : SyncState
+    data class InFamily(
+        val email: String,
+        val familyName: String,
+        val inviteCode: String,
+        val familyId: String,
+        val uid: String,
+    ) : SyncState
 }
 
 /**
@@ -46,7 +49,7 @@ class SyncManager(context: Context, private val local: FamilyStore) {
     val error: StateFlow<String?> = _error.asStateFlow()
 
     init {
-        val app = firebaseApp(context)
+        val app = FirebaseBootstrap.app(context)
         auth = app?.let { FirebaseAuth.getInstance(it) }
         db = app?.let { FirebaseFirestore.getInstance(it) }
         if (auth != null) {
@@ -133,6 +136,8 @@ class SyncManager(context: Context, private val local: FamilyStore) {
             email = email,
             familyName = family?.getString("name").orEmpty(),
             inviteCode = family?.getString("inviteCode").orEmpty(),
+            familyId = familyId,
+            uid = user.uid,
         )
     }
 
@@ -162,16 +167,5 @@ class SyncManager(context: Context, private val local: FamilyStore) {
 
         fun newInviteCode(random: SecureRandom = SecureRandom()): String =
             (1..8).map { CODE_ALPHABET[random.nextInt(CODE_ALPHABET.length)] }.joinToString("")
-
-        private fun firebaseApp(context: Context): FirebaseApp? {
-            if (BuildConfig.FIREBASE_PROJECT_ID.isBlank()) return null
-            FirebaseApp.getApps(context).firstOrNull()?.let { return it }
-            val options = FirebaseOptions.Builder()
-                .setApiKey(BuildConfig.FIREBASE_API_KEY)
-                .setApplicationId(BuildConfig.FIREBASE_APP_ID)
-                .setProjectId(BuildConfig.FIREBASE_PROJECT_ID)
-                .build()
-            return FirebaseApp.initializeApp(context, options)
-        }
     }
 }
