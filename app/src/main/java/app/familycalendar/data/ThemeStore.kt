@@ -15,6 +15,8 @@ data class ThemePrefs(
     val mode: ThemeMode = ThemeMode.System,
     val fonts: String = "cozy",
     val textScale: Float = 1f,
+    /** Text shown in the app's top bar; blank falls back to the app name. */
+    val title: String = "Firefly",
 )
 
 class ThemeStore(context: Context) {
@@ -35,9 +37,10 @@ class ThemeStore(context: Context) {
         mode = runCatching { ThemeMode.valueOf(prefs.getString("mode", "System").orEmpty()) }.getOrDefault(ThemeMode.System),
         fonts = prefs.getString("fonts", "cozy").orEmpty(),
         textScale = prefs.getFloat("textScale", 1f),
+        title = prefs.getString("title", "Firefly").orEmpty(),
     )
 
     private fun save(p: ThemePrefs) = prefs.edit()
         .putString("palette", p.palette).putLong("accent", p.accent).putString("mode", p.mode.name)
-        .putString("fonts", p.fonts).putFloat("textScale", p.textScale).apply()
+        .putString("fonts", p.fonts).putFloat("textScale", p.textScale).putString("title", p.title).apply()
 }

@@ -104,7 +104,7 @@ fun FamilyCalendarApp(
     Scaffold(
         topBar = {
             Column {
-                TopAppBar(title = { Text("Firefly") })
+                TopAppBar(title = { Text(themeStore.current.title.trim().ifEmpty { "Firefly" }) })
                 ScrollableTabRow(selectedTabIndex = screenIndex, edgePadding = 8.dp) {
                     Screen.entries.forEach { s ->
                         Tab(selected = s == screen, onClick = { screenIndex = s.ordinal }, text = { Text(s.label) })

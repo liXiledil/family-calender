@@ -21,6 +21,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -42,6 +43,15 @@ fun ThemeScreen(store: ThemeStore) {
     ) {
         Text("Look and feel", style = MaterialTheme.typography.titleLarge)
         Text("Changes apply to the whole app right away, on this phone only.", style = MaterialTheme.typography.bodySmall)
+
+        Section("Header text")
+        OutlinedTextField(
+            value = prefs.title,
+            onValueChange = { v -> store.update { it.copy(title = v.take(30)) } },
+            label = { Text("Shown at the top of the app") },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth(),
+        )
 
         Section("Light or dark")
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
