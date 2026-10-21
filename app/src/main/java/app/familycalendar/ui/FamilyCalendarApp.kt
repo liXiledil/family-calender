@@ -19,14 +19,10 @@ import androidx.compose.material3.Tab
 import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.Text
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import app.familycalendar.R
@@ -123,11 +119,7 @@ fun FamilyCalendarApp(
                         painter = painterResource(R.drawable.firefly_wordmark),
                         contentDescription = "Firefly",
                         contentScale = ContentScale.Fit,
-                        modifier = Modifier
-                            .height(52.dp)
-                            .clip(RoundedCornerShape(14.dp))
-                            .background(Color(0xFFFFFBF0))
-                            .padding(horizontal = 10.dp),
+                        modifier = Modifier.height(52.dp),
                     )
                 }
                 ScrollableTabRow(selectedTabIndex = screenIndex, edgePadding = 8.dp) {
