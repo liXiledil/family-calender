@@ -24,7 +24,6 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -37,19 +36,17 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import app.familycalendar.LocationShareService
 import app.familycalendar.data.FamilyLocations
-import app.familycalendar.data.FirebaseBootstrap
 import app.familycalendar.data.Person
 import app.familycalendar.data.PlaceTracker
 import app.familycalendar.data.SharingPrefs
 import app.familycalendar.data.SyncState
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
-import com.google.firebase.firestore.FirebaseFirestore
 
 /** Where everyone is, the places that trigger alerts, and the switches for sharing and being alerted. */
 @Composable
-fun FamilyScreen(people: List<Person>, state: SyncState) {
-    if (state !is SyncState.InFamily) {
+fun FamilyScreen(people: List<Person>, state: SyncState, locations: FamilyLocations?) {
+    if (state !is SyncState.InFamily || locations == null) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text("Family locations", style = MaterialTheme.typography.titleMedium)
             Text("Sign in and create or join your family on the Sync tab first. Locations are shared only inside your family.")
@@ -57,9 +54,6 @@ fun FamilyScreen(people: List<Person>, state: SyncState) {
         return
     }
     val context = LocalContext.current
-    val db = remember { FirebaseBootstrap.app(context)?.let { FirebaseFirestore.getInstance(it) } } ?: return
-    val locations = remember(state.familyId) { FamilyLocations(db, state.familyId) }
-    DisposableEffect(locations) { onDispose { locations.close() } }
     val prefs = remember { SharingPrefs(context) }
     var personId by remember { mutableStateOf(prefs.personId) }
     var share by remember { mutableStateOf(prefs.shareLocation) }
@@ -99,7 +93,6 @@ fun FamilyScreen(people: List<Person>, state: SyncState) {
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         Text("Family locations", style = MaterialTheme.typography.titleMedium)
-        FamilyMap(people, memberLocations, places)
 
         Text("This phone belongs to:", style = MaterialTheme.typography.labelMedium)
         Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
