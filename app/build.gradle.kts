@@ -81,6 +81,7 @@ dependencies {
     implementation("com.google.firebase:firebase-firestore")
     implementation("com.anthropic:anthropic-java:2.34.0")
     implementation("com.google.android.gms:play-services-location:21.3.0")
+    implementation("org.osmdroid:osmdroid-android:6.1.20")
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.foundation:foundation")
     implementation("androidx.compose.material3:material3")
