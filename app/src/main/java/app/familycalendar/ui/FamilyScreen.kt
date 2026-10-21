@@ -99,6 +99,7 @@ fun FamilyScreen(people: List<Person>, state: SyncState) {
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         Text("Family locations", style = MaterialTheme.typography.titleMedium)
+        FamilyMap(people, memberLocations, places)
 
         Text("This phone belongs to:", style = MaterialTheme.typography.labelMedium)
         Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
