@@ -50,6 +50,13 @@ fun ThemeScreen(store: ThemeStore) {
             }
         }
 
+        Section("Logo color")
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            listOf(false to "Text color", true to "Main color").forEach { (accent, label) ->
+                FilterChip(selected = prefs.logoAccent == accent, onClick = { store.update { it.copy(logoAccent = accent) } }, label = { Text(label) })
+            }
+        }
+
         Section("Color palette")
         FlowRow(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             AppPalettes.forEach { p ->

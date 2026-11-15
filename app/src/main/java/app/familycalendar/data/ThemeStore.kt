@@ -15,6 +15,8 @@ data class ThemePrefs(
     val mode: ThemeMode = ThemeMode.System,
     val fonts: String = "cozy",
     val textScale: Float = 1f,
+    /** Header logo in the palette's main color instead of its text color. */
+    val logoAccent: Boolean = false,
 )
 
 class ThemeStore(context: Context) {
@@ -35,9 +37,10 @@ class ThemeStore(context: Context) {
         mode = runCatching { ThemeMode.valueOf(prefs.getString("mode", "System").orEmpty()) }.getOrDefault(ThemeMode.System),
         fonts = prefs.getString("fonts", "cozy").orEmpty(),
         textScale = prefs.getFloat("textScale", 1f),
+        logoAccent = prefs.getBoolean("logoAccent", false),
     )
 
     private fun save(p: ThemePrefs) = prefs.edit()
         .putString("palette", p.palette).putLong("accent", p.accent).putString("mode", p.mode.name)
-        .putString("fonts", p.fonts).putFloat("textScale", p.textScale).apply()
+        .putString("fonts", p.fonts).putFloat("textScale", p.textScale).putBoolean("logoAccent", p.logoAccent).apply()
 }

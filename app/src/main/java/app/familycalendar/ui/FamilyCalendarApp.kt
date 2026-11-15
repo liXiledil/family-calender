@@ -24,6 +24,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.ColorFilter
+import app.familycalendar.data.ThemeMode
+import androidx.compose.ui.graphics.luminance
+import androidx.compose.material3.TextButton
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import app.familycalendar.R
@@ -112,17 +115,24 @@ fun FamilyCalendarApp(
     Scaffold(
         topBar = {
             Column {
-                Box(
+                Row(
                     Modifier.fillMaxWidth().statusBarsPadding().padding(horizontal = 12.dp, vertical = 6.dp),
-                    contentAlignment = Alignment.CenterStart,
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Image(
                         painter = painterResource(R.drawable.firefly_wordmark),
                         contentDescription = "Firefly",
                         contentScale = ContentScale.Fit,
-                        colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface),
+                        colorFilter = ColorFilter.tint(
+                            if (themeStore.current.logoAccent) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
+                        ),
                         modifier = Modifier.height(52.dp),
                     )
+                    Spacer(Modifier.weight(1f))
+                    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
+                    TextButton(onClick = {
+                        themeStore.update { it.copy(mode = if (isDark) ThemeMode.Light else ThemeMode.Dark) }
+                    }) { Text(if (isDark) "☀ Light" else "☾ Dark") }
                 }
                 ScrollableTabRow(selectedTabIndex = screenIndex, edgePadding = 8.dp) {
                     Screen.entries.forEach { s ->
